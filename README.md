@@ -129,8 +129,15 @@ curl -X POST --data '{"jsonrpc":"2.0","method":"getinfo","params":[],"id":25}' h
 ## Execute mvs-cli commands
 Run `mvs-cli` commands via `docker exec` command. Example:
 ```bash
-# a0d2fb92dff8 is the container id created from image `metaverse`
+# a0d2fb92dff8 here is the container id created from image `metaverse`
 # you can `docker ps` to get it, and replace it with your container id.
+
 docker exec a0d2fb92dff8 mvs-cli getinfo
+
+# this id/name is hard to remember, you can rename it
+docker rename a0d2fb92dff8 metaverse
+
+# now, you can use the new name instead of container id or old name
+docker exec metaverse mvs-cli getinfo
 ```
 
