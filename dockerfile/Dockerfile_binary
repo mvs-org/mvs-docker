@@ -1,0 +1,14 @@
+FROM jowenshaw/metaverse-wallet:latest
+
+RUN /usr/local/bin/setup_mvs_conf.sh
+
+VOLUME [~/.metaverse]
+
+# P2P Network
+EXPOSE 5251
+# JSON-RPC CALL
+EXPOSE 8820
+# Websocket notifcations
+EXPOSE 8821
+
+ENTRYPOINT ["/usr/local/bin/mvsd"]
