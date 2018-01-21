@@ -44,7 +44,7 @@ In general, docker need root privilege, you can alias it
 
 ## binary version
 
-> **Binary version needs no building, just pull it down and use it directly. It has smaller image size than build from source, and can save a lot of time of compiling. **
+> **Binary version needs no building, just pull it down and use it directly. It has smaller image size than build from source, and can save a lot of time of compiling.**
 
 > \# just pull it down, you can use this image directly  
 > docker pull jowenshaw/metaverse
@@ -56,7 +56,7 @@ In general, docker need root privilege, you can alias it
 
 > **Build from source is slowly but is more elastic, you can choose which version of source code to build.**
 
-> \# clone/wget source code at local, and copy them to docker image.  
+> \# clone / wget source code at local, and copy them to docker image.  
 > \# This saves time to download source codes.  
 > \# And, this way you can change the sources at locally, and build it in the image.  
 > \# If you do not provide source codes here, the container will run get_source_codes.sh to get them.  
@@ -84,7 +84,7 @@ FROM ubuntu:16.04
 COPY ./mvs_build /opt/mvs_build
 
 # run build_metaverse_image.sh, the first param is the apt sources.list file
-# which will replace /etc/apt/sources.list with ./mvs_build/$1 in the image.
+# which will replace /etc/apt/sources.list with /opt/mvs_build/$1 in the image.
 # if the first param is empty, then use official sources which maybe slower.
 RUN cd /opt/mvs_build && /bin/bash build_metaverse_image.sh aliyun_sources.list
 
@@ -106,21 +106,21 @@ ENTRYPOINT ["/usr/local/bin/run_mvsd.sh"]
 
 ## Start docker container
 ```bash
-# runs mvsd
+# run mvsd
 docker run -p 8820:8820 metaverse
 ```
 
 ```bash
 # run mvsd with more parameters
-docker run --name=metaverse --privileged
-    -v /home/jowen/.metaverse:/root/.metaverse
+docker run --name=metaverse --privileged \
+    -v /home/jowen/.metaverse:/root/.metaverse \
     -p 8820:8820 -p 5251:5251 -p 8821:8821 metaverse
 ```
 > `--name=metaverse` will specify the container a name, you can use the name instead of container id or a hard to remember generated name.
 
 > `-v /home/jowen/.metaverse:/root/.metaverse` will mount the container path /root/.metaverse to host path /home/jowen/.metaverse, now you can look the data in the host directly.
 
-> `-p 8820:8820 -p 5251:5251 -p 8821:8821` bind ports, you can use `docker port metaverse` to see e the ports bindinds.
+> `-p 8820:8820 -p 5251:5251 -p 8821:8821` bind ports, you can use `docker port metaverse` to see the port bindings.
 
 > and you can use `docker inspect metaverse` to see more information, include the above infos.
 
@@ -136,7 +136,6 @@ Run `mvs-cli` commands via `docker exec` command. Example:
 ```bash
 # a0d2fb92dff8 here is the container id created from image `metaverse`
 # you can `docker ps` to get it, and replace it with your container id.
-
 docker exec a0d2fb92dff8 mvs-cli getinfo
 
 # this id/name is hard to remember, you can rename it

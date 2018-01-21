@@ -27,8 +27,7 @@ echo ${PACKAGES}
 echo
 
 check_installed() {
-    which ${PACKAGE} &>/dev/null && true
-    dpkg -l $1 2>/dev/null | grep "^ii *$1" &>/dev/null && true || false
+    dpkg -l "$1" 2>/dev/null | \grep -Eq "^ii\s+$1[: \t]" || which "$1" &>/dev/null
 }
 
 # INSTALL tools, may fail on bad network context, try twice, exit when fail.
