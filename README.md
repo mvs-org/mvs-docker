@@ -44,7 +44,7 @@ In general, docker need root privilege, you can alias it
 
 ## binary version
 
-> **Binary version needs no building, just pull it down and use it directly. It has smaller image size than build from source, and can save a lot of time of compiling.**
+**Binary version needs no building, just pull it down and use it directly. It has smaller image size than build from source, and can save a lot of time of compiling.**
 
 > \# just pull it down, you can use this image directly  
 > docker pull jowenshaw/metaverse
@@ -52,9 +52,18 @@ In general, docker need root privilege, you can alias it
 > \# if you feel the image name is hard to remember, you can tag it a new name  
 > docker tag jowenshaw/metaverse metaverse-binary
 
+One thing to mention, the above image **`jowenshaw/metaverse`** is easily to use, it has installed package `curl` and setted the default configuration, including the following
+> VOLUME [~/.metaverse]  
+> EXPOSE 5251 8820 8821  
+> ENTRYPOINT ["/usr/local/bin/run_mvsd.sh"]
+
+If you are familiar with docker and want to do your own configuration, you may still built it from image `jowenshaw/metaverse`.
+
+If you want an image only includes metaverse binaries (`mvsd`, `mvs-cli` in /usr/local/bin), and scripts (`setup_mvs_conf.sh` `run_mvsd.sh` in /usr/local/bin), and config template (`mvs.conf` in /usr/local/etc), you can use another image **`jowenshaw/metaverse-wallet`**. This image is built from `ubuntn:16.04`, only include some executable / script / config files, and installed `curl` which is used by `setup_mvs_conf.sh`. So you need config and run this image with more parameters, or build a new image base on it to do the config jobs.
+
 ## build version
 
-> **Build from source is slowly but is more elastic, you can choose which version of source code to build.**
+**Build from source is slowly but is more elastic, you can choose which version of source code to build.**
 
 > \# clone / wget source code at local, and copy them to docker image.  
 > \# This saves time to download source codes.  
