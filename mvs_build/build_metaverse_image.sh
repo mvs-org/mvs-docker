@@ -64,7 +64,7 @@ fi
 export IS_TRAVIS_LINUX=1
 
 # install dependencies
-/bin/bash install_dependencies.sh --build-boost
+/bin/bash install_dependencies.sh --build-boost --build-upnpc
 
 # build and install metaverse
 mkdir -p build && cd build && cmake .. && make -j2 && make install
