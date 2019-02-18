@@ -4,6 +4,12 @@
 ```tree
 .
 ├── Dockerfile
+├── mvs_binary
+│   ├── bin
+│   │   ├── mvs.conf
+│   │   ├── run_mvsd.sh
+│   │   └── setup_mvs_conf.sh
+│   └── Dockerfile
 ├── mvs_build
 │   ├── aliyun_sources.list
 │   ├── build_metaverse_image.sh
@@ -55,11 +61,16 @@ In general, docker need root privilege, you can alias it
 One thing to mention, the above image **`jowenshaw/metaverse`** is easily to use, it has installed package `curl` and setted the default configuration, including the following
 > VOLUME [~/.metaverse]  
 > EXPOSE 5251 8820 8821  
-> ENTRYPOINT ["/usr/local/bin/run_mvsd.sh"]
+> ENTRYPOINT ["run_mvsd.sh"]
 
 If you are familiar with docker and want to do your own configuration, you may still built it from image `jowenshaw/metaverse`.
 
-If you want an image only includes metaverse binaries (`mvsd`, `mvs-cli` in /usr/local/bin), and scripts (`setup_mvs_conf.sh` `run_mvsd.sh` in /usr/local/bin), and config template (`mvs.conf` in /usr/local/etc), you can use another image **`jowenshaw/metaverse-wallet`**. This image is built from `ubuntn:16.04`, only include some executable / script / config files, and installed `curl` which is used by `setup_mvs_conf.sh`. So you need config and run this image with more parameters, or build a new image base on it to do the config jobs.
+**Another way, you can build the docker by the `Dockerfile` in directory `mvs_binary`**
+> cd mvs_binary
+> # copy mvsd and mvs-cli to bin directory
+> docker build -t metaverse -f Dockerfile .
+
+actually, the `jowenshaw/metaverse` is built through the above way.
 
 ## build version
 
@@ -82,6 +93,25 @@ If you want an image only includes metaverse binaries (`mvsd`, `mvs-cli` in /usr
 ## binary version
 
 **binary image is now directly usable, just pull it down, and use it directly.**
+
+If you want to build from the binary with Dockerfile in `mvs_binary`, the following is the content.
+
+**File Content**
+```file
+FROM ubuntu:16.04
+
+# copy mvsd mvs-cli mvs.conf and auxiliary scripts
+COPY ./bin /usr/local/bin
+
+VOLUME [~/.metaverse]
+
+# 5251 : P2P Network
+# 8820 : JSON-RPC CALL
+# 8821 : Websocket notifcations
+EXPOSE 5251 8820 8821
+
+ENTRYPOINT ["run_mvsd.sh"]
+```
 
 ## build version
 
@@ -106,7 +136,7 @@ EXPOSE 5251 8820 8821
 
 # run_mvsd.sh will call setup_mvs_conf.sh, then run mvsd.
 # this way can ensure the config is always updated when create a new container.
-ENTRYPOINT ["/usr/local/bin/run_mvsd.sh"]
+ENTRYPOINT ["run_mvsd.sh"]
 ```
 
 
@@ -117,14 +147,26 @@ ENTRYPOINT ["/usr/local/bin/run_mvsd.sh"]
 ```bash
 # run mvsd
 docker run -p 8820:8820 metaverse
+or,
+# specify the container name,
+docker run --name=metaverse -p 8820:8820 metaverse
+or,
+# run in the background,
+docker run -d --name=metaverse -p 8820:8820 metaverse
 ```
 
 ```bash
 # run mvsd with more parameters
 docker run --name=metaverse --privileged \
-    -v /home/jowen/.metaverse:/root/.metaverse \
-    -p 8820:8820 -p 5251:5251 -p 8821:8821 metaverse
+    -v /opt/ChainData/Metaverse/Mainnet:/root/.metaverse \
+    -p 5251:5251 -p 8820:8820 -p 8821:8821 metaverse
+
+# run mvsd testnet with different port number
+docker run --name=metaverse-testnet --privileged \
+    -v /opt/ChainData/Metaverse/Testnet:/root/.metaverse \
+    -p 15251:5251 -p 18820:8820 -p 18821:8821 metaverse -t 10.10.10.123
 ```
+
 > `--name=metaverse` will specify the container a name, you can use the name instead of container id or a hard to remember generated name.
 
 > `-v /home/jowen/.metaverse:/root/.metaverse` will mount the container path /root/.metaverse to host path /home/jowen/.metaverse, now you can look the data in the host directly.
@@ -133,11 +175,14 @@ docker run --name=metaverse --privileged \
 
 > and you can use `docker inspect metaverse` to see more information, include the above infos.
 
+> `-t` if specified, then run the testnet.
+
+> `10.10.10.123` if specified, is the ip address which can be specified to the config item `network.self`
 
 ## Test
 ```bash
 # use curl to call APIs
-curl -X POST --data '{"jsonrpc":"2.0","method":"getinfo","params":[],"id":25}' http://127.0.0.1:8820/rpc/v2
+curl -X POST --data '{"jsonrpc":"2.0","method":"getinfo","params":[],"id":25}' http://127.0.0.1:8820/rpc/v3
 ```
 
 ## Execute mvs-cli commands
@@ -154,3 +199,15 @@ docker rename a0d2fb92dff8 metaverse
 docker exec metaverse mvs-cli getinfo
 ```
 
+Sometimes you want to modify the metaverse config file manually after the container is started.
+(for example, modify the network.self config item),
+you can copy out the original config file and copy back to the container.
+(usr metaverse as the container id/name in this example)
+```bash
+# copy out the original config file
+docker exec metaverse cp /root/.metaverse/mvs.conf ./
+# after editting, copy it back to the container
+docker exec metaverse cp ./mvs.conf /root/.metaverse/mvs.conf
+# restart the container to make the modification effective
+docker restart metaverse
+```

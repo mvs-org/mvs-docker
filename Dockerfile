@@ -17,4 +17,4 @@ EXPOSE 5251 8820 8821
 
 # run_mvsd.sh will call setup_mvs_conf.sh, then run mvsd.
 # this way can ensure the config is always updated when create a new container.
-ENTRYPOINT ["/usr/local/bin/run_mvsd.sh"]
+ENTRYPOINT ["run_mvsd.sh"]

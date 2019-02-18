@@ -1,7 +1,7 @@
 #!/bin/bash
 
 MYIP="$1"
-SOURCE=/usr/local/etc/mvs.conf
+SOURCE=/usr/local/bin/mvs.conf
 TARGET=~/.metaverse/mvs.conf
 
 # if both target and source does not exists, then report error and exit
