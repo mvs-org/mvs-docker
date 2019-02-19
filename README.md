@@ -56,18 +56,16 @@ In general, docker need root privilege, you can alias it
 > docker pull jowenshaw/metaverse
 
 > \# if you feel the image name is hard to remember, you can tag it a new name  
-> docker tag jowenshaw/metaverse metaverse-binary
+> docker tag jowenshaw/metaverse metaverse
 
-One thing to mention, the above image **`jowenshaw/metaverse`** is easily to use, it has installed package `curl` and setted the default configuration, including the following
+One thing to mention, the above image **`jowenshaw/metaverse`** is easily to use, it has setted the default configuration, including the following
 > VOLUME [~/.metaverse]  
 > EXPOSE 5251 8820 8821  
 > ENTRYPOINT ["run_mvsd.sh"]
 
-If you are familiar with docker and want to do your own configuration, you may still built it from image `jowenshaw/metaverse`.
-
-**Another way, you can build the docker by the `Dockerfile` in directory `mvs_binary`**
-> cd mvs_binary
-> # copy mvsd and mvs-cli to bin directory
+**Another way, you can build by the `Dockerfile` in directory `mvs_binary`**
+> cd mvs_binary  
+> \# copy mvsd and mvs-cli to bin directory  
 > docker build -t metaverse -f Dockerfile .
 
 actually, the `jowenshaw/metaverse` is built through the above way.
@@ -82,6 +80,7 @@ actually, the `jowenshaw/metaverse` is built through the above way.
 > \# If you do not provide source codes here, the container will run get_source_codes.sh to get them.  
 > \# So get source codes here is not a must step.  
 > \# The only difference is the speed of downloading source codes.  
+
 > ./mvs_build/get_source_codes.sh
 
 > docker build -t metaverse -f Dockerfile .
@@ -169,15 +168,15 @@ docker run --name=metaverse-testnet --privileged \
 
 > `--name=metaverse` will specify the container a name, you can use the name instead of container id or a hard to remember generated name.
 
-> `-v /home/jowen/.metaverse:/root/.metaverse` will mount the container path /root/.metaverse to host path /home/jowen/.metaverse, now you can look the data in the host directly.
+> `-v /opt/ChainData/Metaverse/Mainnet:/root/.metaverse` will mount the container path /root/.metaverse to host path /opt/ChainData/Metaverse/Mainnet, now you can look the data in the host directly.
 
-> `-p 8820:8820 -p 5251:5251 -p 8821:8821` bind ports, you can use `docker port metaverse` to see the port bindings.
+> `-p 5251:5251 -p 8820:8820 -p 8821:8821` bind ports, you can use `docker port metaverse` to see the port bindings.
 
 > and you can use `docker inspect metaverse` to see more information, include the above infos.
 
 > `-t` if specified, then run the testnet.
 
-> `10.10.10.123` if specified, is the ip address which can be specified to the config item `network.self`
+> ip address (eg. `10.10.10.123`) if specified, then this ip address can be specified to the config item `network.self`
 
 ## Test
 ```bash
@@ -199,15 +198,18 @@ docker rename a0d2fb92dff8 metaverse
 docker exec metaverse mvs-cli getinfo
 ```
 
+## Modify the config file manually
 Sometimes you want to modify the metaverse config file manually after the container is started.
 (for example, modify the network.self config item),
-you can copy out the original config file and copy back to the container.
-(usr metaverse as the container id/name in this example)
+you can copy out the original config file, edit it, and copy it back to the container.
+(use metaverse as the container id/name in this example)
 ```bash
 # copy out the original config file
 docker exec metaverse cp /root/.metaverse/mvs.conf ./
-# after editting, copy it back to the container
+
+# after edit, copy it back to the container
 docker exec metaverse cp ./mvs.conf /root/.metaverse/mvs.conf
+
 # restart the container to make the modification effective
 docker restart metaverse
 ```
